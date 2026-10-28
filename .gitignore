@@ -1,0 +1,25 @@
+# Entornos y dependencias descargadas
+.venv*/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+procesamiento/vendor/
+procesamiento/modelos/
+Dataset/
+# Fotos, salidas individuales y revisiones de usuarios
+procesamiento/resultados/*
+!procesamiento/resultados/RESUMEN_HIBRIDO.md
+!procesamiento/resultados/development_v0_2_final/
+!procesamiento/resultados/evaluation_v0_2_final/
+!procesamiento/resultados/hibrido_v0_3/
+procesamiento/resultados/*/*
+!procesamiento/resultados/*/metricas.csv
+!procesamiento/resultados/*/resumen.json
+# Datos sensibles y temporales
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
+*.part

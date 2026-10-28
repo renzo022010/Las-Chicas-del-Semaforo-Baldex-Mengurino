@@ -1,0 +1,73 @@
+{
+  "evaluation_status": "comparison_on_previously_seen_images_not_independent_validation",
+  "split": "evaluation",
+  "tag": "v0_2_final",
+  "config": {
+    "max_side": 1400,
+    "sensitivity": 1.0,
+    "min_area": 25,
+    "max_area_fraction": 0.035,
+    "border_margin": 0.005,
+    "polarity": "auto",
+    "split_touching": true,
+    "split_prominence": 0.08
+  },
+  "detector_sha256": "234fde4b88bc957e5601c373646d828af653bfc5713adf50152b47fb58c476cc",
+  "overall": {
+    "n": 10,
+    "mae_colonies": 14.1,
+    "bias_colonies": -12.5,
+    "median_absolute_error": 3.5,
+    "within_10_percent_or_2_colonies": 4,
+    "seconds_mean": 1.05,
+    "center_in_box_precision": 0.9725,
+    "center_in_box_recall": 0.791,
+    "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+  },
+  "groups": {
+    "higher-resolution/bright": {
+      "n": 3,
+      "mae_colonies": 37.667,
+      "bias_colonies": -37,
+      "median_absolute_error": 27,
+      "within_10_percent_or_2_colonies": 1,
+      "seconds_mean": 1.007,
+      "center_in_box_precision": 0.9913,
+      "center_in_box_recall": 0.75,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    },
+    "higher-resolution/dark": {
+      "n": 2,
+      "mae_colonies": 3,
+      "bias_colonies": 1,
+      "median_absolute_error": 3.0,
+      "within_10_percent_or_2_colonies": 1,
+      "seconds_mean": 0.898,
+      "center_in_box_precision": 0.9104,
+      "center_in_box_recall": 0.9385,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    },
+    "higher-resolution/vague": {
+      "n": 3,
+      "mae_colonies": 5.667,
+      "bias_colonies": -5.667,
+      "median_absolute_error": 7,
+      "within_10_percent_or_2_colonies": 1,
+      "seconds_mean": 0.926,
+      "center_in_box_precision": 0.9898,
+      "center_in_box_recall": 0.8435,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    },
+    "lower-resolution": {
+      "n": 2,
+      "mae_colonies": 2.5,
+      "bias_colonies": 0.5,
+      "median_absolute_error": 2.5,
+      "within_10_percent_or_2_colonies": 1,
+      "seconds_mean": 1.451,
+      "center_in_box_precision": 0.8571,
+      "center_in_box_recall": 0.8824,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    }
+  }
+}

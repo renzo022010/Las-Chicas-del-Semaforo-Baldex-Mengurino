@@ -1,0 +1,11 @@
+﻿image,group,reference,predicted,absolute_error,seconds,matched_centers,false_positive_centers,missed_reference_centers,polarity,roi_method,threshold
+higher-resolution/bright/518.jpg,higher-resolution/bright,298,213,85,1.1445,212,1,86,dark,ellipse,6.0
+higher-resolution/bright/736.jpg,higher-resolution/bright,28,29,1,0.9021,27,2,1,dark,ellipse,6.0
+higher-resolution/bright/971.jpg,higher-resolution/bright,130,103,27,0.9754,103,0,27,dark,ellipse,6.0
+higher-resolution/dark/4904.jpg,higher-resolution/dark,22,26,4,0.9705,21,5,1,dark,ellipse,6.0
+higher-resolution/dark/5271.jpg,higher-resolution/dark,43,41,2,0.8261,40,1,3,dark,ellipse,6.0
+higher-resolution/vague/11761.jpg,higher-resolution/vague,54,47,7,0.927,46,1,8,dark,ellipse,6.0
+higher-resolution/vague/11890.jpg,higher-resolution/vague,3,3,0,0.8562,3,0,0,dark,ellipse,6.0
+higher-resolution/vague/11924.jpg,higher-resolution/vague,58,48,10,0.9959,48,0,10,dark,ellipse,6.0
+lower-resolution/13895.jpg,lower-resolution,19,22,3,1.4394,18,4,1,light,ellipse,6.0
+lower-resolution/14512.jpg,lower-resolution,15,13,2,1.4629,12,1,3,light,ellipse,6.0

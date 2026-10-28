@@ -1,0 +1,51 @@
+{
+  "evaluation_status": "known_AGAR_images_possible_overlap_with_neural_training_not_independent_validation",
+  "overall": {
+    "n": 38,
+    "mae_colonies": 1.974,
+    "bias_colonies": -1.184,
+    "median_absolute_error": 0.0,
+    "within_10_percent_or_2_colonies": 36,
+    "seconds_mean": 1.514,
+    "center_in_box_precision": 0.9818,
+    "center_in_box_recall": 0.9574,
+    "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+  },
+  "groups": {
+    "evaluation": {
+      "n": 10,
+      "mae_colonies": 3.3,
+      "bias_colonies": -3.1,
+      "median_absolute_error": 1.0,
+      "within_10_percent_or_2_colonies": 10,
+      "seconds_mean": 2.213,
+      "center_in_box_precision": 0.9844,
+      "center_in_box_recall": 0.9388,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    },
+    "development": {
+      "n": 28,
+      "mae_colonies": 1.5,
+      "bias_colonies": -0.5,
+      "median_absolute_error": 0.0,
+      "within_10_percent_or_2_colonies": 26,
+      "seconds_mean": 1.265,
+      "center_in_box_precision": 0.9804,
+      "center_in_box_recall": 0.9684,
+      "localization_note": "Correspondencia uno a uno: centro predicho dentro de caja AGAR. No equivale a mAP/IoU."
+    }
+  },
+  "classic_mae": 9.447368421052632,
+  "model_load_seconds": 13.254,
+  "hardware": "NVIDIA GeForce RTX 5060",
+  "max_gpu_mb": 2538.9,
+  "improved": 31,
+  "worsened": 2,
+  "detector_sha256": "4f67908026070b48889bc093631b63ffb7ab658d6884910662d9303729c2a3d0",
+  "sources": {
+    "GroundingDINO": "856dde20aee659246248e20734ef9ba5214f5e44",
+    "sam2": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+    "ColonyGroundedSAM2": "4c3719ab0d723bc3e2542ecb3624be228e939ed2",
+    "patch": "GroundingDINO: usar implementacion PyTorch cuando no exista extension _C; SAM2 sin extension opcional."
+  }
+}

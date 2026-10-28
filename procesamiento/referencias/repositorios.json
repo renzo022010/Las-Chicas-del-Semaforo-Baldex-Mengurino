@@ -1,0 +1,6 @@
+{
+  "GroundingDINO": "856dde20aee659246248e20734ef9ba5214f5e44",
+  "sam2": "2b90b9f5ceec907a1c18123530e92e794ad901a4",
+  "ColonyGroundedSAM2": "4c3719ab0d723bc3e2542ecb3624be228e939ed2",
+  "patch": "GroundingDINO: usar implementacion PyTorch cuando no exista extension _C; SAM2 sin extension opcional."
+}
