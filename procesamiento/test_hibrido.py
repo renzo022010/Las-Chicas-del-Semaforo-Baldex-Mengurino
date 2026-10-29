@@ -1,12 +1,11 @@
 """Pruebas de geometria y contrato API; no sustituyen la evaluacion neuronal."""
 import asyncio,io,tempfile,unittest
 from pathlib import Path
-from unittest.mock import patch
 import numpy as np
 from PIL import Image
 from fastapi.testclient import TestClient
 from contador_hibrido import NeuralConfig,plate_region,compact_mask,duplicate_mask
-import api
+from app.main import create_app
 
 class HybridTests(unittest.TestCase):
     def test_manual_roi_scaling(self):
@@ -30,8 +29,9 @@ class HybridTests(unittest.TestCase):
     def test_upload_validation_and_manual_review(self):
         class FakeCounter:
             hardware='test-double'
-        with tempfile.TemporaryDirectory() as tmp,patch.object(api,'OUTPUT',Path(tmp)),patch.object(api,'HybridCounter',FakeCounter):
-            with TestClient(api.app) as client:
+        with tempfile.TemporaryDirectory() as tmp:
+            app=create_app(output=Path(tmp),samples_db=Path(tmp)/'m.db',hybrid_factory=FakeCounter,use_hybrid=True)
+            with TestClient(app) as client:
                 self.assertTrue(client.get('/health').json()['ready'])
                 self.assertEqual(client.post('/analyze',files={'file':('x.jpg',b'invalid','image/jpeg')}).status_code,400)
                 raw=io.BytesIO();Image.new('RGB',(128,128),(180,180,180)).save(raw,format='PNG')
