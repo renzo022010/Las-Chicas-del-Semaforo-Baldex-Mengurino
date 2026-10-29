@@ -30,9 +30,11 @@ export default defineConfig({
         ],
       },
       // Las fotos y resultados dependen de la API local: nunca se sirven desde la cache.
-      workbox: { navigateFallbackDenylist: [/^\/api/] },
+      workbox: { navigateFallbackDenylist: [/^\/api/, /^\/docs/, /^\/redoc/, /^\/openapi\.json/] },
     }),
   ],
+  // La build va directo a procesamiento/web: el servidor de Python la sirve sin necesitar Node.
+  build: { outDir: '../procesamiento/web', emptyOutDir: true },
   server: { port: 5173, proxy },
   preview: { port: 4173, proxy },
 })

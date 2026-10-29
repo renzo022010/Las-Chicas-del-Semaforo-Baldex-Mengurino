@@ -6,9 +6,21 @@ Aplicación experimental para un proyecto de Agronomía. Incluye dos motores de 
 - **Híbrido:** OpenCV delimita la placa; Grounding DINO con pesos ColonyGroundedSAM2 detecta colonias; SAM2 obtiene sus máscaras; se filtran duplicados y regiones fuera de la placa.
 - **API:** subida de fotos, consulta de resultados y registro de correcciones humanas separado de la predicción original.
 
-El modelo neuronal ya está integrado. No se entrenó una nueva red en este proyecto. La PWA local está en `pwa/`; el despliegue público todavía no está incluido.
+El modelo neuronal ya está integrado. No se entrenó una nueva red en este proyecto. La PWA está en `pwa/` y su versión compilada en `procesamiento/web/`.
 
-## Instalación
+## Inicio rápido (todo en uno, Windows)
+
+Doble clic en **`INICIAR.cmd`** (raíz del repositorio). No hace falta tener Python ni Node instalados:
+
+1. La primera vez descarga [uv](https://github.com/astral-sh/uv) y un Python 3.12 portable en `runtime/`, e instala el motor clásico (~1 minuto).
+2. Si hay GPU NVIDIA, ofrece instalar el motor IA (~5 GB). Si ya existe `procesamiento/.venv-neural`, lo usa directamente.
+3. Inicia un solo servidor con la app y la API, abre el navegador y muestra en la consola el link y un QR para celulares conectados al mismo wifi.
+
+Para usar e instalar la app desde celulares fuera de la red local, doble clic en **`COMPARTIR.cmd`**: además abre un link HTTPS público temporal con [Cloudflare Tunnel](https://github.com/cloudflare/cloudflared) (se descarga a `runtime/` la primera vez; el link cambia en cada inicio). La PC debe quedar encendida mientras se use.
+
+Cada link incluye una clave de acceso (`?clave=...`) guardada en `runtime/clave.txt`; sin ella la API responde 401. Para invalidar los links ya compartidos: `INICIAR.cmd --nueva-clave`. Otras opciones: `--instalar-ia`, `--puerto N`, `--sin-navegador`. Todo lo descargado vive en `runtime/` (ignorado por Git); borrar esa carpeta deja el repositorio como recién clonado.
+
+## Instalación manual
 
 Entorno probado: **Windows, Python 3.12, NVIDIA RTX 5060 de 8 GB**, PyTorch con CUDA 12.8. Instalar Python 3.12 y Git antes de empezar. El motor clásico no necesita GPU.
 
@@ -75,12 +87,17 @@ Organización del código (`procesamiento/app/`):
 
 ```text
 api.py                 punto de entrada (uvicorn api:app)
+lanzador.py            usado por INICIAR.cmd: dependencias, servidor, navegador, QR y túnel
 app/main.py            create_app(): crea los servicios y registra los controladores
-app/config.py          rutas y límites
+app/config.py          rutas, límites y CLAVE_ACCESO
+app/web.py             PWA compilada en el mismo puerto, prefijo /api y clave de acceso
 app/controllers/       una ruta HTTP por archivo: health, analysis, results, samples
 app/services/          lógica sin HTTP: engines (motores y GPU), images, results, samples, ufc
 app/schemas/           validación Pydantic de entradas
+web/                   PWA compilada (npm run build en pwa/); se versiona para no requerir Node
 ```
+
+Si existe `web/`, `INICIAR_API.cmd` también sirve la app en http://127.0.0.1:8000 (solo esta PC, sin clave).
 
 Los controladores solo traducen peticiones y errores; los motores de conteo (`contador.py`, `contador_hibrido.py`) no cambian.
 
@@ -136,10 +153,10 @@ El informe HTML se genera localmente con las imágenes anotadas. Los resúmenes 
 
 ```powershell
 cd procesamiento
-.\.venv-neural\Scripts\python.exe -m unittest test_hibrido test_procesamiento -v
+.\.venv-neural\Scripts\python.exe -m unittest test_hibrido test_procesamiento test_muestras test_servidor -v
 ```
 
-Se verificaron 13 pruebas funcionales y una subida HTTP real con el modelo neuronal. Las pruebas sintéticas y de contrato API no sustituyen la evaluación biológica.
+Se verificaron 24 pruebas funcionales y una subida HTTP real con el modelo neuronal. Las pruebas sintéticas y de contrato API no sustituyen la evaluación biológica. La PWA tiene sus propias pruebas: `npm test` dentro de `pwa/`.
 
 ## Modelos, fuentes y atribución
 

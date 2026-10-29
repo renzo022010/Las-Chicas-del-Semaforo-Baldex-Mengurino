@@ -84,7 +84,8 @@ export default function Analyze() {
         </div>
       )}
 
-      {!online && health.status !== 'checking' && <p className="alert">La API local está apagada. Inicia procesamiento/INICIAR_API.cmd.</p>}
+      {health.status === 'offline' && <p className="alert">El servidor está apagado. Inícialo con INICIAR.cmd.</p>}
+      {health.status === 'denied' && <p className="alert">Falta la clave de acceso. Abre el link completo (o el QR) que muestra INICIAR.cmd.</p>}
       {error && <p className="alert" role="alert">{error}</p>}
 
       <button type="button" className="btn btn-primary btn-wide" disabled={!file || busy || !online} onClick={analyze}>

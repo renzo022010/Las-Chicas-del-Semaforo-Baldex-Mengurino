@@ -7,7 +7,8 @@ import { fmtDateTime, loadRecent } from '../recent.js'
 export function EngineStatus() {
   const h = useHealth()
   if (h.status === 'checking') return <span className="pill">Conectando con la API…</span>
-  if (h.status === 'offline') return <span className="pill pill-bad">API local apagada</span>
+  if (h.status === 'offline') return <span className="pill pill-bad">Servidor apagado: inicia INICIAR.cmd</span>
+  if (h.status === 'denied') return <span className="pill pill-bad">Sin acceso: abre el link o QR de INICIAR.cmd</span>
   const hybrid = h.engines?.includes('hybrid')
   return (
     <span className={'pill ' + (hybrid ? 'pill-good' : 'pill-warn')} title={h.neural_error || ''}>

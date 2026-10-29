@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { api } from './api.js'
+import { AccessDenied, api } from './api.js'
 
 export const HealthContext = createContext({ status: 'checking' })
 export const useHealth = () => useContext(HealthContext)
@@ -11,7 +11,7 @@ export function useApiHealth() {
     let alive = true
     const check = () => api.health()
       .then((h) => alive && setHealth({ status: 'ok', ...h }))
-      .catch(() => alive && setHealth({ status: 'offline' }))
+      .catch((e) => alive && setHealth({ status: e instanceof AccessDenied ? 'denied' : 'offline' }))
     check()
     const t = setInterval(check, 15000)
     return () => { alive = false; clearInterval(t) }
