@@ -6,6 +6,23 @@ export function pointsFromResult(result) {
   return (result.detections || []).map((d) => ({ x: d.x, y: d.y, r: d.radius || 0, kind: d.near_edge ? 'edge' : 'auto' }))
 }
 
+// Una revision guardada solo tiene centros: se muestran como detectados, con el radio tipico del resultado.
+export function pointsFromReview(review, result) {
+  const radii = (result.detections || []).map((d) => d.radius).filter(Boolean).sort((a, b) => a - b)
+  const r = radii.length ? radii[Math.floor(radii.length / 2)] : 0
+  return review.centers.map((c) => ({ x: c.x, y: c.y, r, kind: 'auto' }))
+}
+
+export function reviewStats(points, automaticCount) {
+  const added = points.filter((p) => p.kind === 'manual').length
+  return {
+    total: points.length,
+    edge: points.filter((p) => p.kind === 'edge').length,
+    added,
+    removed: Math.max(0, automaticCount + added - points.length),
+  }
+}
+
 export default function PlateReview({ imageUrl, size, points, onChange }) {
   const svgRef = useRef(null)
   const [zoom, setZoom] = useState(1)

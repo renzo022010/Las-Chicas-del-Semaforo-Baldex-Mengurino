@@ -56,15 +56,33 @@ Ejecutar `procesamiento/INICIAR_API.cmd` o, dentro de esa carpeta:
 
 Abrir [la documentación interactiva](http://127.0.0.1:8000/docs) después del mensaje `Application startup complete`.
 
+Endpoints validados (los que usa la PWA):
+
 - `GET /health`: estado del motor.
 - `POST /analyze?engine=hybrid`: subir una fotografía en el campo multipart `file`.
 - `POST /analyze?engine=classic`: comparar con el procesamiento clásico.
-- `GET /results/{analysis_id}/foto_conteo.jpg`: consultar la imagen anotada.
+- `GET /results/{analysis_id}/foto_conteo.jpg`: consultar la imagen anotada (`foto_original.jpg` es la foto sin marcas).
 - `POST /results/{analysis_id}/review`: guardar centros corregidos manualmente sin sobrescribir el resultado automático.
-- `GET/POST /samples`, `GET/PUT/DELETE /samples/{id}`: registro de muestras (trazabilidad y diluciones) en `resultados/muestras.db`. Cada muestra devuelve su UFC calculado.
+
+En desarrollo, sin validar y no usados por la PWA todavía:
+
+- `GET/POST /samples`, `GET/PUT/DELETE /samples/{id}`: registro de muestras (trazabilidad y diluciones) en `resultados/muestras.db`.
 - `POST /ufc`: calcular UFC/mL o UFC/g a partir de diluciones, volumen sembrado y conteos de placa.
 
 `POST /analyze` usa `engine=auto` por defecto: híbrido si el modelo cargó, clásico si no. Si `.venv-neural` no existe o el modelo falla al cargar, la API arranca igual con el motor clásico (`GET /health` indica el motivo en `neural_error`). La interfaz PWA está en [`pwa/`](pwa/README.md).
+
+Organización del código (`procesamiento/app/`):
+
+```text
+api.py                 punto de entrada (uvicorn api:app)
+app/main.py            create_app(): crea los servicios y registra los controladores
+app/config.py          rutas y límites
+app/controllers/       una ruta HTTP por archivo: health, analysis, results, samples
+app/services/          lógica sin HTTP: engines (motores y GPU), images, results, samples, ufc
+app/schemas/           validación Pydantic de entradas
+```
+
+Los controladores solo traducen peticiones y errores; los motores de conteo (`contador.py`, `contador_hibrido.py`) no cambian.
 
 Ejemplo de revisión, con coordenadas de la foto original:
 

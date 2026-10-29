@@ -1,6 +1,6 @@
-# PWA de conteo de UFC (MVP local)
+# PWA de conteo de UFC (primera versión)
 
-Interfaz React para el flujo del laboratorio: **trazabilidad → diluciones y conteo → foto de placa → reporte PDF**. Habla con la API de `procesamiento/` a través de `/api` (Vite reenvía las llamadas a `http://127.0.0.1:8000`).
+Interfaz React con el flujo básico: **inicio → foto de la placa → resultado con corrección manual**. Solo usa los endpoints validados de la API (`/health`, `/analyze`, `/results/{id}/…` y `/results/{id}/review`). Vite reenvía `/api` a `http://127.0.0.1:8000`; con `API_URL` se puede apuntar a otra instancia.
 
 ## Requisitos
 
@@ -24,7 +24,7 @@ npm run build
 npm run preview
 ```
 
-Abrir http://localhost:4173 en Chrome o Edge y usar **Instalar aplicación** en la barra de direcciones. Las fotos y resultados siempre vienen de la API local; el service worker solo guarda la interfaz.
+Abrir http://localhost:4173 en Chrome o Edge y usar **Instalar aplicación** en la barra de direcciones. El service worker solo guarda la interfaz; fotos y resultados siempre vienen de la API local.
 
 ## Pruebas
 
@@ -32,9 +32,10 @@ Abrir http://localhost:4173 en Chrome o Edge y usar **Instalar aplicación** en 
 npm test
 ```
 
-## Qué hace cada paso
+## Pantallas
 
-1. **Trazabilidad:** código automático `M-00001`, fecha y hora, tipo de muestra, procedencia y responsable.
-2. **Diluciones y conteo:** tabla de diluciones con placas A y B. La API calcula UFC/g o UFC/mL con las diluciones cuyo promedio cae en el rango contable (30–300 por defecto, editable). Se guarda solo.
-3. **Foto de placa:** captura o galería, conteo con IA o clásico, y corrección tocando la imagen (quitar o añadir colonias). La corrección se guarda aparte en `revision.json`; la predicción original no se modifica.
-4. **Reporte:** resumen, imágenes de placa, observaciones y PDF.
+1. **Inicio:** escudo UNALM, estado del motor y últimos análisis de este dispositivo (guardados en el navegador; la API no tiene listado).
+2. **Registro fotográfico:** capturar o elegir de galería, vista previa y motor (IA o clásico).
+3. **Resultado del análisis:** conteo, colonias cerca del borde, corrección tocando la imagen (quitar o añadir) y **Guardar revisión**. La revisión se guarda aparte en `revision.json`; la predicción original no cambia.
+
+Trazabilidad, diluciones, UFC y reporte PDF quedan para una siguiente versión. La API ya expone `/samples` y `/ufc` como endpoints en desarrollo, y las pantallas que los usaban están en el commit `14a6ace` de la rama `mvp-pwa`.

@@ -1,57 +1,41 @@
-import { NavLink, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { HealthContext, useApiHealth } from './health.js'
 import { Icon } from './icons.jsx'
 import Home from './pages/Home.jsx'
-import Samples from './pages/Samples.jsx'
-import Wizard from './pages/Wizard.jsx'
+import Analyze from './pages/Analyze.jsx'
+import Result from './pages/Result.jsx'
 
 function Header() {
-  const { pathname } = useLocation()
   const navigate = useNavigate()
-  const inner = pathname !== '/'
   return (
     <header className="appbar">
-      {inner && (
-        <button className="appbar-back" onClick={() => navigate(-1)} aria-label="Volver">
-          <Icon name="back" />
-        </button>
-      )}
-      <div className="brand">
-        <span className="brand-mark" aria-hidden="true"><Icon name="dish" /></span>
-        <div>
-          <strong>UNALM</strong>
-          <span>Laboratorio de Microbiología</span>
-        </div>
+      {/* Sin historial previo (enlace abierto directo) se vuelve al inicio en vez de salir de la app. */}
+      <button className="appbar-back" onClick={() => (window.history.state?.idx > 0 ? navigate(-1) : navigate('/'))} aria-label="Volver"><Icon name="back" /></button>
+      <img src="/unalm-escudo-blanco.png" alt="" className="appbar-crest" />
+      <div className="appbar-text">
+        <strong>UNALM</strong>
+        <span>Laboratorio de Microbiología</span>
       </div>
     </header>
   )
 }
 
-function BottomNav() {
-  return (
-    <nav className="bottomnav" aria-label="Secciones">
-      <NavLink to="/" end><Icon name="home" /><span>Inicio</span></NavLink>
-      <NavLink to="/muestras"><Icon name="flask" /><span>Muestras</span></NavLink>
-      <NavLink to="/muestra/nueva/1"><Icon name="plus" /><span>Nueva</span></NavLink>
-    </nav>
-  )
-}
-
 export default function App() {
   const health = useApiHealth()
+  const { pathname } = useLocation()
+  const home = pathname === '/'
   return (
     <HealthContext.Provider value={health}>
-      <div className="shell">
-        <Header />
+      <div className={'shell' + (home ? ' is-home' : '')}>
+        {!home && <Header />}
         <main className="content">
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/muestras" element={<Samples />} />
-            <Route path="/muestra/:id/:step" element={<Wizard />} />
+            <Route path="/analizar" element={<Analyze />} />
+            <Route path="/resultado/:id" element={<Result />} />
             <Route path="*" element={<Home />} />
           </Routes>
         </main>
-        <BottomNav />
       </div>
     </HealthContext.Provider>
   )
