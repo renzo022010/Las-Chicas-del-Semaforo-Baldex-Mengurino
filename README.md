@@ -6,7 +6,7 @@ Aplicación experimental para un proyecto de Agronomía. Incluye dos motores de 
 - **Híbrido:** OpenCV delimita la placa; Grounding DINO con pesos ColonyGroundedSAM2 detecta colonias; SAM2 obtiene sus máscaras; se filtran duplicados y regiones fuera de la placa.
 - **API:** subida de fotos, consulta de resultados y registro de correcciones humanas separado de la predicción original.
 
-El modelo neuronal ya está integrado. No se entrenó una nueva red en este proyecto. La interfaz PWA final y el despliegue público todavía no están incluidos.
+El modelo neuronal ya está integrado. No se entrenó una nueva red en este proyecto. La PWA local está en `pwa/`; el despliegue público todavía no está incluido.
 
 ## Instalación
 
@@ -61,6 +61,10 @@ Abrir [la documentación interactiva](http://127.0.0.1:8000/docs) después del m
 - `POST /analyze?engine=classic`: comparar con el procesamiento clásico.
 - `GET /results/{analysis_id}/foto_conteo.jpg`: consultar la imagen anotada.
 - `POST /results/{analysis_id}/review`: guardar centros corregidos manualmente sin sobrescribir el resultado automático.
+- `GET/POST /samples`, `GET/PUT/DELETE /samples/{id}`: registro de muestras (trazabilidad y diluciones) en `resultados/muestras.db`. Cada muestra devuelve su UFC calculado.
+- `POST /ufc`: calcular UFC/mL o UFC/g a partir de diluciones, volumen sembrado y conteos de placa.
+
+`POST /analyze` usa `engine=auto` por defecto: híbrido si el modelo cargó, clásico si no. Si `.venv-neural` no existe o el modelo falla al cargar, la API arranca igual con el motor clásico (`GET /health` indica el motivo en `neural_error`). La interfaz PWA está en [`pwa/`](pwa/README.md).
 
 Ejemplo de revisión, con coordenadas de la foto original:
 
