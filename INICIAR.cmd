@@ -21,7 +21,7 @@ if not exist "%RT%\venv\Scripts\python.exe" (
   "%UV_EXE%" venv --python 3.12 --python-preference only-managed "%RT%\venv" || goto :error
 )
 "%RT%\venv\Scripts\python.exe" -X utf8 "%~dp0procesamiento\lanzador.py" %*
-if errorlevel 1 goto :error
+if not "%errorlevel%"=="0" goto :error
 exit /b 0
 
 :error

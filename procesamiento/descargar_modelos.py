@@ -2,6 +2,7 @@ from pathlib import Path
 from urllib.request import urlretrieve
 import hashlib,json
 from concurrent.futures import ThreadPoolExecutor
+from instalar import when_unlocked
 root=Path(__file__).resolve().parent
 sources={
  'colony_gd.pth':'https://huggingface.co/DataScienceWFSR/ColonyGroundedSAM2/resolve/main/checkpoints/colony_gd.pth',
@@ -18,7 +19,7 @@ def download(item):
         print('Descargando '+name,flush=True)
         tmp=dst.with_suffix('.part')
         urlretrieve(url,tmp)
-        tmp.replace(dst)
+        when_unlocked(lambda:tmp.replace(dst))
     digest=hashlib.file_digest(dst.open('rb'),'sha256').hexdigest()
     print(name+' listo: '+str(dst.stat().st_size)+' bytes',flush=True)
     return {'file':name,'url':url,'bytes':dst.stat().st_size,'sha256':digest}

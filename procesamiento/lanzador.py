@@ -6,6 +6,7 @@ Opciones: --instalar-ia, --puerto N, --nueva-clave, --sin-navegador
 """
 from pathlib import Path
 import argparse,hashlib,json,os,re,secrets,shutil,socket,subprocess,sys,threading,time,urllib.request,webbrowser
+from instalar import when_unlocked
 
 ROOT=Path(__file__).resolve().parent.parent
 PROC=ROOT/'procesamiento'
@@ -22,7 +23,7 @@ def venv_python(env):return env/('Scripts/python.exe' if WIN else 'bin/python')
 def download(url,dest):
     tmp=dest.with_suffix(dest.suffix+'.part')
     urllib.request.urlretrieve(url,tmp)
-    tmp.replace(dest)
+    when_unlocked(lambda:tmp.replace(dest))
 
 def ensure_server_deps():
     """Instala el motor clasico y el servidor en el Python portable; se repite solo si cambia requirements.txt."""
@@ -36,26 +37,50 @@ def ensure_server_deps():
     subprocess.run([*cmd,'-r',str(req),*EXTRA],check=True)
     stamp.write_text(want)
 
+def trust_bundled_certificates():
+    """Un Windows recien instalado trae pocos certificados raiz y Python solo ve esos: las descargas de modelos
+    fallarian con CERTIFICATE_VERIFY_FAILED. Se suma certifi, heredado por instalar.py y descargar_modelos.py."""
+    try:import certifi
+    except ImportError:return
+    os.environ.setdefault('SSL_CERT_FILE',certifi.where())
+
+def has_nvidia_gpu():
+    exe=shutil.which('nvidia-smi')
+    return bool(exe) and subprocess.run([exe,'-L'],capture_output=True).returncode==0
+
 def neural_python():
-    py=venv_python(PROC/'.venv-neural')
+    env=PROC/'.venv-neural'
+    py=venv_python(env)
+    # instalar.py leaves this mark until it finishes: a half-installed environment must not be used.
+    if (env/'instalacion-en-curso').exists():return None
     return py if py.is_file() and (PROC/'modelos/manifest.json').is_file() else None
 
 def maybe_install_neural(force,device="auto"):
-    """Ofrece el motor IA para CPU o GPU; la respuesta 'no' se recuerda."""
+    """Ofrece el motor IA para CPU o GPU; la respuesta 'no' se recuerda. Si falla, la app abre con el clasico."""
     if neural_python() and not force:return
     prefs_file=RT/'preferencias.json'
     prefs=json.loads(prefs_file.read_text(encoding='utf-8')) if prefs_file.is_file() else {}
+    def remember_no():
+        prefs['instalar_ia']='no';prefs_file.write_text(json.dumps(prefs),encoding='utf-8')
     if not force:
         if prefs.get('instalar_ia')=='no':return
-        say('\nPuedes instalar el motor IA con GPU NVIDIA o CPU (sin grafica dedicada).')
-        say('Descarga varios GB y tarda varios minutos. Se puede instalar despues con: INICIAR.cmd --instalar-ia')
+        if has_nvidia_gpu():
+            say('\nSe detecto una GPU NVIDIA. El motor IA es mucho mas preciso que el clasico y tarda segundos por foto.')
+        else:
+            say('\nEsta PC no tiene GPU NVIDIA. El motor clasico (liviano) ya esta listo y responde en segundos.')
+            say('Opcional: el motor IA es mas preciso, pero en el procesador cada foto puede tardar de 30 s a varios minutos.')
+        say('El motor IA descarga varios GB. Se puede instalar despues con: INICIAR.cmd --instalar-ia')
         try:answer=input('Instalar el motor IA ahora? [s/N]: ').strip().lower()
         except EOFError:answer=''
         if answer not in ('s','si','sí','y','yes'):
-            prefs['instalar_ia']='no';prefs_file.write_text(json.dumps(prefs),encoding='utf-8')
+            remember_no()
             return
     say('Instalando el motor IA...')
-    subprocess.run([sys.executable,str(PROC/'instalar.py'),'--motor','hibrido','--device',device],cwd=PROC,check=True)
+    try:subprocess.run([sys.executable,str(PROC/'instalar.py'),'--motor','hibrido','--device',device],cwd=PROC,check=True)
+    except subprocess.CalledProcessError:
+        say('\nNo se pudo instalar el motor IA (ver el mensaje anterior). La app se abre con el motor clasico.')
+        say('Para reintentar: INICIAR.cmd --instalar-ia')
+        remember_no()
 
 def access_key(renew):
     path=RT/'clave.txt'
@@ -77,15 +102,27 @@ def lan_ip():
         try:s.connect(('192.0.2.1',80));return s.getsockname()[0]
         except OSError:return None
 
+class ServerFailed(Exception):pass
+
 def wait_ready(port,key,server,timeout=240):
     req=urllib.request.Request(f'http://127.0.0.1:{port}/api/health',headers={'X-Clave':key})
     start=time.time()
     while time.time()-start<timeout:
-        if server.poll() is not None:raise SystemExit('El servidor se cerro al iniciar. Revisa el mensaje anterior.')
+        if server.poll() is not None:raise ServerFailed('El servidor se cerro al iniciar. Revisa el mensaje anterior.')
         try:
             with LOCAL.open(req,timeout=3) as r:return json.load(r)
         except OSError:time.sleep(1)
-    raise SystemExit('El servidor no respondio a tiempo.')
+    raise ServerFailed('El servidor no respondio a tiempo.')
+
+def start_server(python,port,env):
+    return subprocess.Popen([str(python),'-X','utf8','-m','uvicorn','api:app','--host','0.0.0.0','--port',str(port),
+                             '--log-level','warning'],cwd=PROC,env=env)
+
+def stop(proc):
+    if proc and proc.poll() is None:
+        proc.terminate()
+        try:proc.wait(10)
+        except subprocess.TimeoutExpired:proc.kill()
 
 def start_tunnel(port):
     exe=shutil.which('cloudflared')
@@ -128,6 +165,7 @@ def main():
     RT.mkdir(exist_ok=True)
 
     ensure_server_deps()
+    trust_bundled_certificates()
     maybe_install_neural(args.instalar_ia,args.device)
     if not (PROC/'web/index.html').is_file():
         raise SystemExit('Falta la PWA compilada en procesamiento/web. Ejecuta "npm run build" dentro de pwa/.')
@@ -143,11 +181,19 @@ def main():
     if not neural:env['MOTOR']='clasico'
     if neural and args.device=='cpu':say('IA en CPU: el analisis puede tardar varios minutos; espera a que termine.')
     say('\nIniciando el servidor'+(' y cargando el modelo IA (puede tardar varios minutos)...' if neural else '...'))
-    server=subprocess.Popen([str(python),'-X','utf8','-m','uvicorn','api:app','--host','0.0.0.0','--port',str(port),
-                             '--log-level','warning'],cwd=PROC,env=env)
+    server=start_server(python,port,env)
     tunnel=None
     try:
-        health=wait_ready(port,key,server,timeout=900)
+        try:health=wait_ready(port,key,server,timeout=900)
+        except ServerFailed as exc:
+            if not neural:raise SystemExit(str(exc)) from None
+            # A broken neural environment must not block the app: the classic engine has its own Python.
+            say(f'{exc}\nEl motor IA no pudo iniciar; se abre con el motor clasico.')
+            stop(server)
+            env['MOTOR']='clasico'
+            server=start_server(sys.executable,port,env)
+            try:health=wait_ready(port,key,server)
+            except ServerFailed as again:raise SystemExit(str(again)) from None
         local=f'http://localhost:{port}/?clave={key}'
         ip=lan_ip();lan=f'http://{ip}:{port}/?clave={key}' if ip else None
         public=None
@@ -166,14 +212,12 @@ def main():
         elif WIN:say('  Si Windows pregunta por el firewall, permite "redes privadas" para que entren los celulares.')
         say('  No compartas la clave del link fuera del grupo. Para cerrar: Ctrl+C o cierra esta ventana.\n')
         if not args.sin_navegador:webbrowser.open(local)
-        server.wait()
+        code=server.wait()
+        # Nothing stops the server except Ctrl+C, handled below: it crashed, and the window must stay open to read why.
+        if code:raise SystemExit(f'El servidor se cerro inesperadamente (codigo {code}). Revisa el mensaje anterior.')
     except KeyboardInterrupt:
         say('\nCerrando...')
     finally:
-        for proc in (tunnel,server):
-            if proc and proc.poll() is None:
-                proc.terminate()
-                try:proc.wait(10)
-                except subprocess.TimeoutExpired:proc.kill()
+        stop(tunnel);stop(server)
 
 if __name__=='__main__':main()
